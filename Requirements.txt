@@ -47,3 +47,12 @@ requests>=2.32.0
 fastapi
 uvicorn[standard]
 python-multipart
+
+# database
+pymongo
+
+# auth
+pyjwt
+passlib[bcrypt]
+bcrypt
+email-validator
