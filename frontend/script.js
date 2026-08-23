@@ -6,7 +6,7 @@
 // Auto-detects local dev vs. deployed: on localhost, talk to your local
 // backend on :8000. Anywhere else (your real domain), talk to the deployed
 // backend URL below. Fill that in once you know it — see README's deploy section.
-const PRODUCTION_API_BASE = "https://YOUR-BACKEND-URL.onrender.com"; // <-- set this after deploying the backend
+const PRODUCTION_API_BASE = "https://ai-video-assistant-3-1izw.onrender.com"; // <-- set this after deploying the backend
 const API_BASE = ["localhost", "127.0.0.1"].includes(window.location.hostname)
   ? "http://localhost:8000"
   : PRODUCTION_API_BASE;
