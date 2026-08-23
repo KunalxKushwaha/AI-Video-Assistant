@@ -115,6 +115,11 @@ function resetAuthForm() {
   });
   $("#authSubmitLabel").textContent = "Log in";
   $("#authNameCollapse").classList.add("is-collapsed");
+  $("#authPassword").type = "password";
+  $("#authPasswordToggle").setAttribute("aria-pressed", "false");
+  $("#authPasswordToggle").setAttribute("aria-label", "Show password");
+  $(".eye-open", $("#authPasswordToggle")).hidden = false;
+  $(".eye-closed", $("#authPasswordToggle")).hidden = true;
 }
 
 function toggleNavAuthUi(loggedIn) {
@@ -124,6 +129,7 @@ function toggleNavAuthUi(loggedIn) {
 }
 
 function showAuthGate(message) {
+  $("#bootLoading").hidden = true;
   $("#authOverlay").classList.remove("is-leaving");
   $("#authOverlay").hidden = false;
   $("#authHint").textContent = message || "";
@@ -141,10 +147,17 @@ function shakeAuthCard() {
 async function enterApp({ demo }) {
   state.demo = demo;
   const overlay = $("#authOverlay");
-  overlay.classList.add("is-leaving");
-  await sleep(320);
+  $("#bootLoading").hidden = true;
+  // Only play the fade-out if the overlay was actually visible (a real login
+  // just happened). If we're restoring an already-valid session on reload,
+  // it was hidden the whole time — animating it out would just add a
+  // pointless 320ms delay before the app appears.
+  if (!overlay.hidden) {
+    overlay.classList.add("is-leaving");
+    await sleep(320);
+    overlay.classList.remove("is-leaving");
+  }
   overlay.hidden = true;
-  overlay.classList.remove("is-leaving");
   $("#top").hidden = false;
   toggleNavAuthUi(!demo);
   if (!demo && state.user) {
@@ -249,6 +262,19 @@ $$(".auth-tab").forEach((tab) => {
     $("#authName").required = authMode === "register";
     $("#authHint").textContent = "";
   });
+});
+
+// --- show/hide password ---
+const passwordToggle = $("#authPasswordToggle");
+const passwordInput = $("#authPassword");
+passwordToggle.addEventListener("click", () => {
+  const showing = passwordInput.type === "text";
+  passwordInput.type = showing ? "password" : "text";
+  passwordToggle.setAttribute("aria-pressed", String(!showing));
+  passwordToggle.setAttribute("aria-label", showing ? "Show password" : "Hide password");
+  $(".eye-open", passwordToggle).hidden = !showing;
+  $(".eye-closed", passwordToggle).hidden = showing;
+  passwordInput.focus();
 });
 
 $("#authForm").addEventListener("submit", async (e) => {
@@ -799,7 +825,10 @@ async function loadHistoryList() {
 async function loadHistoryItem(id) {
   try {
     const res = await authedFetch(`/api/history/${id}`);
-    if (!res.ok) throw new Error("Couldn't open that analysis.");
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.detail || "Couldn't open that analysis.");
+    }
     const data = await res.json();
     renderResults(data, false);
     state.sessionId = data.session_id;
@@ -813,8 +842,41 @@ async function loadHistoryItem(id) {
     $("#results").scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (err) {
     console.error(err);
+    historyList.insertAdjacentHTML(
+      "afterbegin",
+      `<li class="history-panel__empty" style="color:var(--rose)">${escapeHtml(err.message)}</li>`
+    );
   }
 }
+
+// --- clear all history (two-click confirm, no jarring native dialog) ---
+const historyClearBtn = $("#historyClearAll");
+let clearConfirmTimer = null;
+
+historyClearBtn.addEventListener("click", async () => {
+  if (!historyClearBtn.classList.contains("is-confirming")) {
+    historyClearBtn.classList.add("is-confirming");
+    historyClearBtn.textContent = "Click again to confirm";
+    clearConfirmTimer = setTimeout(() => {
+      historyClearBtn.classList.remove("is-confirming");
+      historyClearBtn.textContent = "Clear all history";
+    }, 3000);
+    return;
+  }
+
+  clearTimeout(clearConfirmTimer);
+  historyClearBtn.disabled = true;
+  try {
+    await authedFetch(`/api/history`, { method: "DELETE" });
+    await loadHistoryList();
+  } catch (err) {
+    console.error(err);
+  } finally {
+    historyClearBtn.disabled = false;
+    historyClearBtn.classList.remove("is-confirming");
+    historyClearBtn.textContent = "Clear all history";
+  }
+});
 
 // ================================================================
 // Scroll reveal for "how it works" cards
@@ -832,6 +894,20 @@ const observer = new IntersectionObserver(
   { threshold: 0.15 }
 );
 $$(".how__card").forEach((card) => observer.observe(card));
+
+// Chrome keeps `animation: ... both` elements on their own GPU layer even
+// after the animation finishes. If a layout change happens anywhere inside
+// them later (like the name field's height animating), Chrome re-rasterizes
+// that whole layer and briefly blurs the text. Releasing the animation once
+// it's done fixes it for good instead of just moving the symptom around.
+// Delegated on document (not queried once at load) because .oauth-btn
+// elements don't exist yet at this point — they render async after
+// /api/auth/providers resolves.
+document.addEventListener("animationend", (e) => {
+  if (e.target.matches?.(".auth-card, .auth-field, .oauth-btn")) {
+    e.target.style.animation = "none";
+  }
+});
 
 // ================================================================
 // Go

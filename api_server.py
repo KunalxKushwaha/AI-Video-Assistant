@@ -453,6 +453,16 @@ async def delete_history_item(analysis_id: str, user: dict = Depends(get_current
     return {"deleted": True}
 
 
+@app.delete("/api/history")
+async def clear_history(user: dict = Depends(get_current_user)):
+    result = analyses_collection().delete_many({"user_id": user["id"]})
+    # Any live chat sessions pointing at the deleted analyses are now orphaned — drop them.
+    stale_sessions = [sid for sid, s in SESSIONS.items() if s["user_id"] == user["id"]]
+    for sid in stale_sessions:
+        SESSIONS.pop(sid, None)
+    return {"deleted": result.deleted_count}
+
+
 @app.get("/api/health")
 async def health():
     try:

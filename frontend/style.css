@@ -200,6 +200,11 @@ ul { margin: 0; padding: 0; list-style: none; }
   position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center;
   padding: 24px; background: linear-gradient(160deg, var(--bg-1), var(--bg-2) 60%, var(--bg-3));
 }
+.boot-loading {
+  position: fixed; inset: 0; z-index: 101; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(160deg, var(--bg-1), var(--bg-2) 60%, var(--bg-3));
+}
+.boot-loading .nav__mark { height: 28px; }
 .auth-card {
   width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-lg); padding: 36px 32px; box-shadow: var(--shadow-lg);
@@ -256,6 +261,16 @@ ul { margin: 0; padding: 0; list-style: none; }
   transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
 }
 .auth-field input:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4px var(--violet-tint); }
+
+.password-input { position: relative; display: flex; }
+.password-input input { flex: 1; padding-right: 44px !important; }
+.password-toggle {
+  position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+  border: none; background: transparent; width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; color: var(--ink-400);
+  transition: color .2s var(--ease), background .2s var(--ease);
+}
+.password-toggle:hover { color: var(--violet-dark); background: var(--violet-tint); }
 .auth-field--name { animation: none; } /* the wrapper below handles entrance/collapse instead */
 
 /* Collapsing the name field with grid-template-rows (not max-height) avoids
@@ -327,6 +342,16 @@ ul { margin: 0; padding: 0; list-style: none; }
   border-radius: 50%; font-size: 1rem; transition: color .2s var(--ease), background .2s var(--ease);
 }
 .history-item__delete:hover { color: var(--rose); background: var(--rose-tint); }
+
+.history-panel__footer { padding: 14px; border-top: 1px solid var(--border-soft); }
+.history-panel__clear {
+  width: 100%; border: 1px solid var(--border); background: var(--surface); color: var(--ink-500);
+  font-size: 0.85rem; font-weight: 700; padding: 12px; border-radius: var(--radius-sm);
+  transition: background .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease);
+}
+.history-panel__clear:hover { border-color: var(--rose); color: var(--rose); background: var(--rose-tint); }
+.history-panel__clear.is-confirming { background: var(--rose); border-color: var(--rose); color: #fff; }
+.history-panel__clear:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ============================================================
    HERO
