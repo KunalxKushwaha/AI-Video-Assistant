@@ -5,6 +5,10 @@ Password hashing (bcrypt) + JWT issuing/verification for Wavelength.
 Set JWT_SECRET in your .env — see .env.example. Anyone who has that
 secret can forge tokens, so keep it out of source control and don't
 reuse the placeholder value in production.
+
+Social login (Google/Microsoft/Apple) lives in oauth.py — this file only
+handles email/password accounts plus the JWT session tokens issued after
+ANY login method succeeds (password or social).
 """
 
 import os
@@ -29,7 +33,9 @@ def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def verify_password(password: str, password_hash: str) -> bool:
+def verify_password(password: str, password_hash) -> bool:
+    if not password_hash:
+        return False  # social-login account with no password set
     return pwd_context.verify(password, password_hash)
 
 
@@ -67,4 +73,4 @@ async def get_current_user(authorization: str = Header(None)) -> dict:
     if not user:
         raise HTTPException(status_code=401, detail="Account no longer exists.")
 
-    return {"id": str(user["_id"]), "email": user["email"]}
+    return {"id": str(user["_id"]), "email": user["email"], "name": user.get("name", "")}

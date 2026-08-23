@@ -45,39 +45,65 @@
       <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M12 2a10 10 0 1 0 10 10 1 1 0 0 0-2 0 8 8 0 1 1-2.34-5.66l-1.42 1.42A1 1 0 0 0 17 9.5h4.5a1 1 0 0 0 1-1V4a1 1 0 0 0-1.7-.7l-1.44 1.44A10 10 0 0 0 12 2Zm-1 5a1 1 0 0 1 2 0v4.59l2.7 2.7a1 1 0 0 1-1.4 1.42l-3-3A1 1 0 0 1 11 12.5V7Z"/></svg>
       History
     </button>
-    <span class="nav__email" id="navEmail" hidden></span>
-    <button class="nav__logout-btn" id="logoutBtn" hidden>Log out</button>
+    <div class="account-menu" id="accountMenu" hidden>
+      <button class="account-menu__trigger" id="accountTrigger" aria-haspopup="true" aria-expanded="false">
+        <span class="account-avatar" id="accountAvatar">W</span>
+      </button>
+      <div class="account-menu__dropdown" id="accountDropdown" hidden>
+        <div class="account-menu__info">
+          <span class="account-menu__name" id="accountName">—</span>
+          <span class="account-menu__email" id="accountEmail">—</span>
+        </div>
+        <button class="account-menu__logout" id="logoutBtn">
+          <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M10 3a1 1 0 0 1 0 2H6v14h4a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5Zm5.3 4.3a1 1 0 0 1 1.4 0l4 4a1 1 0 0 1 0 1.4l-4 4a1 1 0 0 1-1.4-1.4l2.3-2.3H9a1 1 0 1 1 0-2h8.6l-2.3-2.3a1 1 0 0 1 0-1.4Z"/></svg>
+          Log out
+        </button>
+      </div>
+    </div>
     <a class="nav__cta" href="#analyze" id="navCta">Analyze a video</a>
   </div>
 </header>
 
 <!-- AUTH GATE -->
 <div class="auth-overlay" id="authOverlay">
-  <div class="auth-card">
+  <div class="auth-card" id="authCard">
     <div class="nav__mark auth-card__mark" aria-hidden="true">
       <span class="mark-bar"></span><span class="mark-bar"></span><span class="mark-bar"></span><span class="mark-bar"></span>
     </div>
     <h2 class="auth-card__title">Welcome to Wavelength</h2>
     <p class="auth-card__sub">Sign in to save your analyses and pick up where you left off.</p>
 
+    <div class="oauth-buttons" id="oauthButtons" hidden></div>
+    <div class="auth-divider" id="authDivider" hidden><span>or use email</span></div>
+
     <div class="auth-tabs" role="tablist">
       <button type="button" class="auth-tab is-active" data-auth="login" role="tab" aria-selected="true">Log in</button>
       <button type="button" class="auth-tab" data-auth="register" role="tab" aria-selected="false">Create account</button>
+      <span class="auth-tab__indicator" id="authTabIndicator" aria-hidden="true"></span>
     </div>
 
     <form class="auth-form" id="authForm" novalidate>
-      <label class="auth-field">
+      <div class="name-field-collapse is-collapsed" id="authNameCollapse">
+        <div class="name-field-collapse__inner">
+          <label class="auth-field auth-field--name" id="authNameField" style="--i:0">
+            <span>Full name</span>
+            <input type="text" id="authName" name="name" autocomplete="name" />
+          </label>
+        </div>
+      </div>
+      <label class="auth-field" style="--i:1">
         <span>Email</span>
         <input type="email" id="authEmail" name="email" autocomplete="email" required />
       </label>
-      <label class="auth-field">
+      <label class="auth-field" style="--i:2">
         <span>Password</span>
         <input type="password" id="authPassword" name="password" autocomplete="current-password" required minlength="8" />
       </label>
       <p class="auth-form__hint" id="authHint" role="alert" aria-live="polite"></p>
       <button type="submit" class="btn-primary auth-form__submit" id="authSubmit">
         <span id="authSubmitLabel">Log in</span>
-        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M5 12h12.17l-4.88-4.88a1 1 0 1 1 1.42-1.41l6.58 6.58a1 1 0 0 1 0 1.42l-6.58 6.58a1 1 0 0 1-1.42-1.41L17.17 14H5a1 1 0 1 1 0-2Z"/></svg>
+        <svg class="auth-form__submit-arrow" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M5 12h12.17l-4.88-4.88a1 1 0 1 1 1.42-1.41l6.58 6.58a1 1 0 0 1 0 1.42l-6.58 6.58a1 1 0 0 1-1.42-1.41L17.17 14H5a1 1 0 1 1 0-2Z"/></svg>
+        <span class="auth-form__spinner" aria-hidden="true"></span>
       </button>
     </form>
 
