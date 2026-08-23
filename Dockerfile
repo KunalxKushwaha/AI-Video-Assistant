@@ -8,11 +8,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
 
 WORKDIR /app
 
-# Assumes your existing pipeline deps live in requirements.txt at the repo
-# root (next to main.py) — adjust the filename here if yours is named
-# differently.
-COPY requirements.txt requirements-api.txt ./
-RUN pip install --no-cache-dir -r requirements.txt -r requirements-api.txt
+# Assumes a single requirements.txt at the repo root (next to main.py)
+# with all dependencies merged in — both your pipeline's and the ones in
+# requirements-api.txt from this project.
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
