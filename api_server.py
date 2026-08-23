@@ -79,11 +79,13 @@ app = FastAPI(title="Wavelength API")
 # feel free to split this into its own SESSION_SECRET env var later.
 app.add_middleware(SessionMiddleware, secret_key=JWT_SECRET)
 
-# Dev-friendly CORS. Tighten allow_origins to your actual frontend origin
-# before shipping this anywhere real.
+# CORS: allow local dev always, plus whatever FRONTEND_URL points at (your
+# real domain once deployed). No more wildcard "*" — that's fine for a
+# read-only public API, but this one takes credentials (JWTs), so the
+# origin needs to be explicit.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=list({"http://localhost:5500", "http://127.0.0.1:5500", FRONTEND_URL}),
     allow_methods=["*"],
     allow_headers=["*"],
 )
