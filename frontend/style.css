@@ -644,12 +644,20 @@ ul { margin: 0; padding: 0; list-style: none; }
    FOOTER
    ============================================================ */
 .footer {
-  display: flex; align-items: center; gap: 14px; justify-content: center;
-  padding: 30px 20px 40px; color: var(--ink-400); font-size: 0.85rem; text-align: center;
+  display: flex; align-items: center; gap: 14px; justify-content: space-between;
+  flex-wrap: wrap; padding: 30px 20px 40px; color: var(--ink-400); font-size: 0.85rem;
   border-top: 1px solid var(--border-soft);
 }
-.footer__mark { display: inline-flex; align-items: flex-end; gap: 3px; height: 14px; }
+.footer__brand { display: flex; align-items: center; gap: 14px; text-align: left; }
+.footer__mark { display: inline-flex; align-items: flex-end; gap: 3px; height: 14px; flex-shrink: 0; }
 .footer__mark .mark-bar { animation: none; opacity: 0.6; }
+.footer__credit { text-align: right; }
+.footer__credit a { color: var(--violet-dark); font-weight: 700; text-decoration: none; }
+.footer__credit a:hover { text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 640px) {
+  .footer { justify-content: center; text-align: center; }
+  .footer__brand, .footer__credit { text-align: center; }
+}
 
 /* utility */
 [hidden] { display: none !important; }
