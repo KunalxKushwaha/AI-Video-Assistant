@@ -153,16 +153,45 @@ ul { margin: 0; padding: 0; list-style: none; }
   padding: 9px 15px; border-radius: 100px; transition: border-color .2s var(--ease), transform .2s var(--ease);
 }
 .nav__history-btn:hover { border-color: var(--violet); transform: translateY(-1px); }
-.nav__email {
-  font-size: 0.82rem; font-weight: 600; color: var(--ink-400); max-width: 160px;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+.nav__email { display: none; } /* superseded by .account-menu below, kept only so JS toggles don't error */
+
+/* ============================================================
+   ACCOUNT MENU
+   ============================================================ */
+.account-menu { position: relative; }
+.account-menu__trigger { border: none; background: transparent; padding: 0; border-radius: 50%; line-height: 0; }
+.account-avatar {
+  display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px;
+  border-radius: 50%; background: linear-gradient(135deg, var(--violet), var(--teal)); color: #fff;
+  font-family: var(--font-display); font-weight: 700; font-size: 0.95rem;
+  box-shadow: var(--shadow-sm); transition: transform .2s var(--ease), box-shadow .2s var(--ease);
 }
-.nav__logout-btn {
-  border: none; background: transparent; font-size: 0.85rem; font-weight: 700;
-  color: var(--ink-400); padding: 6px 4px; transition: color .2s var(--ease);
+.account-menu__trigger:hover .account-avatar { transform: translateY(-1px) scale(1.04); box-shadow: var(--shadow-md); }
+.account-menu__trigger[aria-expanded="true"] .account-avatar { box-shadow: 0 0 0 4px var(--violet-tint); }
+
+.account-menu__dropdown {
+  position: absolute; top: calc(100% + 12px); right: 0; width: 240px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg); overflow: hidden; z-index: 60;
+  animation: menuIn .18s var(--ease) both;
+  transform-origin: top right;
 }
-.nav__logout-btn:hover { color: var(--rose); }
-@media (max-width: 640px) { .nav__email { display: none !important; } }
+@keyframes menuIn {
+  from { opacity: 0; transform: scale(0.94) translateY(-4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.account-menu__info { padding: 16px 18px; border-bottom: 1px solid var(--border-soft); display: flex; flex-direction: column; gap: 3px; }
+.account-menu__name { font-weight: 700; font-size: 0.92rem; color: var(--ink-900); }
+.account-menu__email {
+  font-size: 0.78rem; color: var(--ink-400); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.account-menu__logout {
+  width: 100%; display: flex; align-items: center; gap: 9px; border: none; background: transparent;
+  padding: 13px 18px; font-size: 0.86rem; font-weight: 700; color: var(--ink-500);
+  transition: background .2s var(--ease), color .2s var(--ease);
+}
+.account-menu__logout:hover { background: var(--rose-tint); color: var(--rose); }
+@media (max-width: 640px) { .account-menu__dropdown { width: 220px; } }
 
 /* ============================================================
    AUTH GATE
@@ -171,6 +200,11 @@ ul { margin: 0; padding: 0; list-style: none; }
   position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center;
   padding: 24px; background: linear-gradient(160deg, var(--bg-1), var(--bg-2) 60%, var(--bg-3));
 }
+.boot-loading {
+  position: fixed; inset: 0; z-index: 101; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(160deg, var(--bg-1), var(--bg-2) 60%, var(--bg-3));
+}
+.boot-loading .nav__mark { height: 28px; }
 .auth-card {
   width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-lg); padding: 36px 32px; box-shadow: var(--shadow-lg);
@@ -180,25 +214,102 @@ ul { margin: 0; padding: 0; list-style: none; }
 .auth-card__title { font-size: 1.5rem; margin-bottom: 8px; }
 .auth-card__sub { color: var(--ink-500); font-size: 0.92rem; line-height: 1.5; margin-bottom: 22px; }
 
-.auth-tabs { display: flex; gap: 4px; padding: 5px; background: var(--surface-alt); border-radius: 100px; margin-bottom: 22px; }
-.auth-tab {
-  flex: 1; border: none; background: transparent; padding: 9px 12px; border-radius: 100px;
-  font-size: 0.86rem; font-weight: 700; color: var(--ink-500); transition: background .25s var(--ease), color .25s var(--ease);
+/* social buttons */
+.oauth-buttons { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.oauth-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-sm);
+  padding: 12px 16px; font-size: 0.9rem; font-weight: 700; color: var(--ink-700);
+  transition: transform .2s var(--ease), box-shadow .2s var(--ease), border-color .2s var(--ease);
+  animation: rise .5s var(--ease) both;
 }
-.auth-tab.is-active { background: var(--ink-900); color: #fff; }
+.oauth-btn:nth-child(1) { animation-delay: .02s; }
+.oauth-btn:nth-child(2) { animation-delay: .08s; }
+.oauth-btn:nth-child(3) { animation-delay: .14s; }
+.oauth-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); border-color: var(--ink-300); }
+.oauth-btn:active { transform: translateY(0); }
+.oauth-btn svg { flex-shrink: 0; }
 
+.auth-divider {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+  font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-300);
+}
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* tabs with sliding indicator */
+.auth-tabs { position: relative; display: flex; gap: 4px; padding: 5px; background: var(--surface-alt); border-radius: 100px; margin-bottom: 22px; }
+.auth-tab {
+  position: relative; z-index: 1; flex: 1; border: none; background: transparent; padding: 9px 12px;
+  border-radius: 100px; font-size: 0.86rem; font-weight: 700; color: var(--ink-500);
+  transition: color .3s var(--ease);
+}
+.auth-tab.is-active { color: #fff; }
+.auth-tab__indicator {
+  position: absolute; top: 5px; bottom: 5px; left: 5px; width: calc(50% - 5px);
+  background: var(--ink-900); border-radius: 100px; transition: transform .3s var(--ease);
+}
+
+/* staggered field entrance */
 .auth-form { display: flex; flex-direction: column; gap: 14px; }
-.auth-field { display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--ink-500); }
+.auth-field {
+  display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--ink-500);
+  animation: rise .45s var(--ease) both; animation-delay: calc(var(--i) * 70ms + 40ms);
+}
 .auth-field input {
   border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 13px 14px;
   font-size: 0.95rem; font-weight: 500; color: var(--ink-900); background: var(--surface-alt);
+  transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
 }
 .auth-field input:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4px var(--violet-tint); }
+
+.password-input { position: relative; display: flex; }
+.password-input input { flex: 1; padding-right: 44px !important; }
+.password-toggle {
+  position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+  border: none; background: transparent; width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; color: var(--ink-400);
+  transition: color .2s var(--ease), background .2s var(--ease);
+}
+.password-toggle:hover { color: var(--violet-dark); background: var(--violet-tint); }
+.auth-field--name { animation: none; } /* the wrapper below handles entrance/collapse instead */
+
+/* Collapsing the name field with grid-template-rows (not max-height) avoids
+   the blurry-text-during-reflow bug Chrome has with animated max-height. */
+.name-field-collapse {
+  display: grid; grid-template-rows: 1fr; opacity: 1;
+  transition: grid-template-rows .3s var(--ease), opacity .25s var(--ease);
+}
+.name-field-collapse.is-collapsed { grid-template-rows: 0fr; opacity: 0; }
+.name-field-collapse__inner { overflow: hidden; min-height: 0; }
+.name-field-collapse.is-collapsed .name-field-collapse__inner * { pointer-events: none; }
 .auth-form__hint { min-height: 16px; font-size: 0.82rem; font-weight: 600; color: var(--rose); }
-.auth-form__submit { justify-content: center; width: 100%; }
+
+.auth-form__submit { justify-content: center; width: 100%; position: relative; }
+.auth-form__spinner {
+  display: none; width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff;
+  animation: spin .7s linear infinite;
+}
+.auth-form__submit.is-loading .auth-form__submit-arrow { display: none; }
+.auth-form__submit.is-loading .auth-form__spinner { display: inline-block; }
+.auth-form__submit.is-loading span:first-child { opacity: 0.85; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .auth-card__demo { text-align: center; margin-top: 20px; font-size: 0.84rem; color: var(--ink-400); }
 .auth-card__demo-btn { border: none; background: transparent; color: var(--violet-dark); font-weight: 700; font-size: 0.84rem; text-decoration: underline; text-underline-offset: 3px; }
+
+/* error shake + success exit */
+@keyframes cardShake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+.auth-card.is-shake { animation: cardShake .45s; }
+
+.auth-overlay { transition: opacity .35s var(--ease); }
+.auth-overlay.is-leaving { opacity: 0; pointer-events: none; }
+.auth-overlay.is-leaving .auth-card { transform: scale(0.97); transition: transform .35s var(--ease); }
 
 /* ============================================================
    HISTORY PANEL
@@ -231,6 +342,16 @@ ul { margin: 0; padding: 0; list-style: none; }
   border-radius: 50%; font-size: 1rem; transition: color .2s var(--ease), background .2s var(--ease);
 }
 .history-item__delete:hover { color: var(--rose); background: var(--rose-tint); }
+
+.history-panel__footer { padding: 14px; border-top: 1px solid var(--border-soft); }
+.history-panel__clear {
+  width: 100%; border: 1px solid var(--border); background: var(--surface); color: var(--ink-500);
+  font-size: 0.85rem; font-weight: 700; padding: 12px; border-radius: var(--radius-sm);
+  transition: background .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease);
+}
+.history-panel__clear:hover { border-color: var(--rose); color: var(--rose); background: var(--rose-tint); }
+.history-panel__clear.is-confirming { background: var(--rose); border-color: var(--rose); color: #fff; }
+.history-panel__clear:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ============================================================
    HERO
