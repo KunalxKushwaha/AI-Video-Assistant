@@ -44,3 +44,6 @@ pyjwt
 passlib[bcrypt]
 bcrypt
 email-validator
+authlib
+itsdangerous
+httpx
