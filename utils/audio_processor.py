@@ -19,6 +19,13 @@ def download_youtube_audio(url :str) ->str:
         ],
         "quiet": True,
     }
+    # In production, YouTube often blocks cloud/datacenter IPs (Render, AWS,
+    # etc.) as suspected bots. Passing real cookies from a logged-in browser
+    # session works around this. Set YT_COOKIES_FILE to the path of an
+    # exported cookies.txt to enable it.
+    cookies_file = os.getenv("YT_COOKIES_FILE")
+    if cookies_file and os.path.exists(cookies_file):
+        ydl_opts["cookiefile"] = cookies_file
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
         filename = ydl.prepare_filename(info).replace(".webm", ".wav").replace(".m4a", ".wav")
