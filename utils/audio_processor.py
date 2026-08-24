@@ -1,12 +1,14 @@
 import yt_dlp
 from pydub import AudioSegment
 import os
+import shutil
 
-DOWNLOAD_DIR = 'downloades'
-os.makedirs(DOWNLOAD_DIR, exist_ok = True)
+DOWNLOAD_DIR = "downloades"
+os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
-def download_youtube_audio(url :str) ->str:
+def download_youtube_audio(url: str) -> str:
     output_path = os.path.join(DOWNLOAD_DIR, "%(title)s.%(ext)s")
+
     ydl_opts = {
         "format": "bestaudio/best",
         "outtmpl": output_path,
@@ -19,18 +21,26 @@ def download_youtube_audio(url :str) ->str:
         ],
         "quiet": True,
     }
-    # In production, YouTube often blocks cloud/datacenter IPs (Render, AWS,
-    # etc.) as suspected bots. Passing real cookies from a logged-in browser
-    # session works around this. Set YT_COOKIES_FILE to the path of an
-    # exported cookies.txt to enable it.
+
     cookies_file = os.getenv("YT_COOKIES_FILE")
+
     if cookies_file and os.path.exists(cookies_file):
-        ydl_opts["cookiefile"] = cookies_file
+        local_cookie_file = os.path.join(
+            DOWNLOAD_DIR, "youtube_cookies.txt"
+        )
+
+        shutil.copyfile(cookies_file, local_cookie_file)
+        ydl_opts["cookiefile"] = local_cookie_file
+
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
-        filename = ydl.prepare_filename(info).replace(".webm", ".wav").replace(".m4a", ".wav")
-    return filename
+        filename = (
+            ydl.prepare_filename(info)
+            .replace(".webm", ".wav")
+            .replace(".m4a", ".wav")
+        )
 
+    return filename
 
 def convert_to_wav(input_path: str) -> str:
     """Convert any audio/video file to WAV format using pydub."""
