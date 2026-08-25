@@ -1,4 +1,3 @@
-import whisper
 import os
 import requests
 from pydub import AudioSegment
@@ -19,6 +18,12 @@ _model = None
 
 
 def load_model():
+    # Deferred import: `whisper` pulls in torch, which is heavy enough that
+    # loading it at module-import time inflates baseline memory for every
+    # request — including ones that never touch English/Whisper at all
+    # (Hinglish via Sarvam, login, chat, history...). Only pay that cost
+    # when an English transcription actually happens.
+    import whisper
 
     global _model  
 
@@ -120,4 +125,4 @@ def transcribe_all(chunks: list, language: str = "english") -> str:
 
     print("Transcription complete.")
 
-    return full_transcript.strip()  
+    return full_transcript.strip() 
