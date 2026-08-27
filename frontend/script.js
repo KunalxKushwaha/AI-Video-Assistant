@@ -174,42 +174,69 @@ async function enterApp({ demo }) {
   }
 }
 
+function decodeJwtPayload(token) {
+  // Read the token's payload without verifying it — that's fine here,
+  // it's only used to render the UI instantly. The server still verifies
+  // the real signature on every protected request regardless.
+  try {
+    const payload = token.split(".")[1];
+    const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
 async function bootstrap() {
   consumeOAuthRedirectToken();
   loadOAuthProviders(); // fire and forget — doesn't block showing the login form
 
   if (state.token) {
-    try {
-      const res = await fetch(`${API_BASE}/api/auth/me`, { headers: authHeaders() });
-      if (res.ok) {
-        const data = await res.json();
-        state.user = data.user;
-        await enterApp({ demo: false });
-        return;
-      }
-      setToken(null); // expired/invalid
-    } catch (err) {
-      if (err instanceof TypeError) {
-        await enterApp({ demo: true }); // backend unreachable — go straight to demo mode
-        return;
-      }
+    // Show the app immediately using what the token itself tells us —
+    // don't let a cold, possibly-sleeping backend (Render free tier can
+    // take 30-50s to wake up) block this. Real verification happens in
+    // the background; authedFetch already logs the user out on a 401
+    // if the token turns out to be invalid or expired.
+    const payload = decodeJwtPayload(state.token);
+    if (payload?.email) {
+      state.user = { email: payload.email, name: "" };
+      await enterApp({ demo: false });
+      refreshUserInBackground();
+      return;
     }
+    setToken(null); // malformed token, can't even read it
   }
 
-  // No valid token — see whether a backend even exists before forcing login.
+  showAuthGate();
+
+  // Check backend reachability without blocking the login screen. Only
+  // fall back to demo mode if there's truly no backend — not just a slow,
+  // cold one still waking up.
   try {
     const res = await fetch(`${API_BASE}/api/health`);
-    if (res.ok) {
-      showAuthGate();
-      return;
-    }
+    if (!res.ok) throw new Error("unhealthy");
   } catch (err) {
-    if (err instanceof TypeError) {
-      await enterApp({ demo: true });
-      return;
-    }
+    if (err instanceof TypeError) enterApp({ demo: true });
   }
-  showAuthGate();
+}
+
+async function refreshUserInBackground() {
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/me`, { headers: authHeaders() });
+    if (res.ok) {
+      const data = await res.json();
+      state.user = data.user;
+      const displayName = state.user.name || state.user.email;
+      $("#accountAvatar").textContent = (displayName[0] || "?").toUpperCase();
+      $("#accountName").textContent = state.user.name || state.user.email;
+      $("#accountEmail").textContent = state.user.email;
+    } else if (res.status === 401) {
+      logout("Your session expired — please log in again.");
+    }
+  } catch {
+    // Cold start or transient network issue — the app's already usable,
+    // any real action will retry naturally. Don't bounce the user out here.
+  }
 }
 
 // If we just landed here from an OAuth redirect, api_server.py appended
